@@ -19,7 +19,7 @@ export default function Dashboard() {
 
   async function fetchCounts() {
     const today = startOfDay(new Date());
-    const dateStr = today.toISOString().split("T")[0];
+    const dateStr = format(today, "yyyy-MM-dd");
 
     const { data, error } = await supabase
       .from("leads")

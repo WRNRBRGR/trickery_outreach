@@ -93,8 +93,12 @@ export default function LeadImportPage() {
 
       // 2. Flexible Schedule Tracker
       const today = new Date();
+      // If it's past 11 AM, start scheduling from tomorrow
+      if (today.getHours() >= 11) {
+        today.setDate(today.getDate() + 1);
+      }
       today.setHours(0, 0, 0, 0);
-      const todayStr = today.toISOString().split("T")[0];
+      const todayStr = format(today, "yyyy-MM-dd");
 
       // Fetch existing scheduled counts from DB
       const { data: existingCounts } = await supabase
@@ -156,7 +160,7 @@ export default function LeadImportPage() {
               state: lead.state?.toUpperCase(),
               agency: lead.agency || null,
               timezone: tz,
-              scheduled_date: stage.date.toISOString().split("T")[0],
+              scheduled_date: format(stage.date, "yyyy-MM-dd"),
               ai_pitch: JSON.stringify({ 
                 stage: stage.type,
                 subject: finalSubject,

@@ -71,17 +71,21 @@ export default function LeadListPage() {
       const { data: allLeads, error: fetchError } = await supabase.from("leads").select("*");
       if (fetchError) throw fetchError;
 
-      // 2. Identify sent leads to populate tracker with existing "taken" slots
+      // 2. Setup Tracker and identify today
       const today = new Date();
+      // If it's past 11 AM, start scheduling from tomorrow to be safe
+      if (today.getHours() >= 11) {
+        today.setDate(today.getDate() + 1);
+      }
       today.setHours(0,0,0,0);
+      const todayStr = format(today, "yyyy-MM-dd");
+
       const tracker = new ScheduleTracker(config);
       
-      const sentLeads = allLeads.filter(l => l.sent_at);
-      sentLeads.forEach(l => {
-        // We only care about sent leads if they are on or after today (unlikely but possible)
-        if (l.scheduled_date >= today.toISOString().split("T")[0]) {
-          // This slot is taken
-          tracker.getNextAvailableDate(new Date(l.scheduled_date)); 
+      // Populate tracker with sent leads (slots that are already "gone")
+      allLeads.filter(l => l.sent_at).forEach(l => {
+        if (l.scheduled_date >= todayStr) {
+          tracker.addCount(l.scheduled_date);
         }
       });
 
@@ -97,7 +101,7 @@ export default function LeadListPage() {
 
       // 4. Reschedule each group
       Object.values(groups).forEach(personLeads => {
-        // Sort by stage order
+        // Sort by stage order to maintain sequence integrity
         personLeads.sort((a, b) => stageOrder.indexOf(getStage(a.ai_pitch)) - stageOrder.indexOf(getStage(b.ai_pitch)));
         
         let lastDate: Date | null = null;
@@ -107,30 +111,39 @@ export default function LeadListPage() {
             // Already sent, use this as the anchor for the next one
             lastDate = new Date(l.scheduled_date);
           } else {
-            // Unsent, reschedule it
+            // Unsent, reschedule it starting from today (or last sent date + gap)
             const anchor = lastDate || today;
             const minGap = lastDate ? config.daysBetween : 0;
             
-            // However, the anchor should not be in the past for the tracker
+            // Ensure we never schedule in the past
             const searchStart = anchor < today ? today : anchor;
             
             const newDate = tracker.getNextAvailableDate(searchStart, minGap);
-            updates.push({ id: l.id, scheduled_date: newDate.toISOString().split("T")[0] });
+            const newDateStr = format(newDate, "yyyy-MM-dd");
+
+            // Only add to updates if the date actually changed
+            if (l.scheduled_date !== newDateStr) {
+              updates.push({ id: l.id, scheduled_date: newDateStr });
+            }
             lastDate = newDate;
           }
         });
       });
 
-      // 5. Batch update (using upsert for efficiency)
+      // 5. Batch update
       if (updates.length > 0) {
-        const { error: updateError } = await supabase
-          .from("leads")
-          .upsert(updates, { onConflict: 'id' });
+        // Perform updates in smaller chunks if needed, but for 100-200 leads a single call is fine
+        // We use a loop for now to be safe with RLS and specific column updates
+        const updatePromises = updates.map(u => 
+          supabase.from("leads").update({ scheduled_date: u.scheduled_date }).eq("id", u.id)
+        );
         
-        if (updateError) throw updateError;
+        const results = await Promise.all(updatePromises);
+        const error = results.find(r => r.error)?.error;
+        if (error) throw error;
       }
 
-      showStatus("success", `Rescheduled ${updates.length} pending emails starting from today.`);
+      showStatus("success", `Optimized ${updates.length} scheduled emails.`);
       fetchLeads();
     } catch (error: any) {
       console.error("Rebalance failed:", error);

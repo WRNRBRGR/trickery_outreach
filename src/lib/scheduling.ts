@@ -53,7 +53,7 @@ export class ScheduleTracker {
     }
 
     while (true) {
-      const dateStr = current.toISOString().split("T")[0];
+      const dateStr = format(current, "yyyy-MM-dd");
       const count = this.map.get(dateStr) || 0;
       const isAllowedDay = this.config.activeDays.includes(current.getDay());
       
@@ -63,6 +63,10 @@ export class ScheduleTracker {
       }
       current.setDate(current.getDate() + 1);
     }
+  }
+
+  addCount(dateStr: string) {
+    this.map.set(dateStr, (this.map.get(dateStr) || 0) + 1);
   }
 
   getDailyCounts(): Map<string, number> {

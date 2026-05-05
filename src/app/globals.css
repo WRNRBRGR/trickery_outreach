@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: #00ff99; 
+  --color-accent-deep: #00ccff;
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --surface: #f8fafc;
+  --border: #e2e8f0;
+  --accent: #6366f1; /* Indigo */
+  --accent-deep: #a855f7; /* Violet */
+  --muted: #64748b;
+  --btn-text: #ffffff;
+}
+
+.dark {
+  --background: #020617; /* Deep Slate/Navy */
+  --foreground: #f8fafc;
+  --surface: #0f172a;
+  --border: #1e293b;
+  --accent: #818cf8; /* Light Indigo */
+  --accent-deep: #c084fc; /* Light Violet */
+  --muted: #94a3b8;
+  --btn-text: #ffffff;
+}
+
+body {
+  background-color: var(--background);
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+  color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-br from-[var(--accent)] to-[var(--accent-deep)] text-[var(--btn-text)] font-black py-2.5 px-6 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_8px_30px_rgba(99,102,241,0.3)] border-0 cursor-pointer uppercase tracking-wider text-[10px];
+  }
+
+
+  
+  .glass-panel {
+    @apply bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 shadow-xl relative overflow-hidden;
+    background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.02), transparent);
+  }
+
+  .input-field {
+    @apply bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-2.5 text-[var(--foreground)] focus:outline-none focus:border-[var(--accent)] transition-all focus:ring-2 focus:ring-[var(--accent)]/20 text-sm;
+  }
+}
+
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* Force move dev indicators/toolbars to the bottom right */
+#vercel-toolbar-container,
+.vercel-toolbar-root,
+[data-nextjs-route-announcer] {
+  right: 24px !important;
+  left: auto !important;
+  bottom: 24px !important;
+}
+
+

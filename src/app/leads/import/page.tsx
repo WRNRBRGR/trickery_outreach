@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ScheduleTracker, useSchedulingConfig } from "@/lib/scheduling";
 import { getVariation } from "@/app/actions/ai";
+import { format } from "date-fns";
 import Papa from "papaparse";
 
 
@@ -122,55 +123,59 @@ export default function LeadImportPage() {
       for (let i = 0; i < parsedLeads.length; i += concurrencyLimit) {
         const batch = parsedLeads.slice(i, i + concurrencyLimit);
         
-        const batchPromises = batch.map(async (lead, batchIdx) => {
-          const globalIdx = i + batchIdx;
-          const tz = STATE_TIMEZONES[lead.state?.toUpperCase() || "NY"] || "America/New_York";
-          const vIdx = globalIdx % 3;
+          const batchPromises = batch.map(async (lead, batchIdx) => {
+            const globalIdx = i + batchIdx;
+            const tz = STATE_TIMEZONES[lead.state?.toUpperCase() || "NY"] || "America/New_York";
+            const vIdx = globalIdx % 3;
+            
+            // Assign one of two colors evenly
+            const assignedColor = globalIdx % 2 === 0 ? "indigo" : "rose";
 
-          const d1 = tracker.getNextAvailableDate(today);
-          const d2 = tracker.getNextAvailableDate(d1, gap);
-          const d3 = tracker.getNextAvailableDate(d2, gap);
+            const d1 = tracker.getNextAvailableDate(today);
+            const d2 = tracker.getNextAvailableDate(d1, gap);
+            const d3 = tracker.getNextAvailableDate(d2, gap);
 
-          const stages = [
-            { type: "INTRO", date: d1, template: allTemplates.INTRO[vIdx] },
-            { type: "SHOWREELS", date: d2, template: allTemplates.SHOWREELS[vIdx] },
-            { type: "CURTAIN_CALL", date: d3, template: allTemplates.CURTAIN_CALL[vIdx] },
-          ];
+            const stages = [
+              { type: "INTRO", date: d1, template: allTemplates.INTRO[vIdx] },
+              { type: "SHOWREELS", date: d2, template: allTemplates.SHOWREELS[vIdx] },
+              { type: "CURTAIN_CALL", date: d3, template: allTemplates.CURTAIN_CALL[vIdx] },
+            ];
 
-          const leadRecords = [];
-          for (const stage of stages) {
-            let finalSubject = stage.template.subject;
-            let finalBody = stage.template.body;
+            const leadRecords = [];
+            for (const stage of stages) {
+              let finalSubject = stage.template.subject;
+              let finalBody = stage.template.body;
 
-            if (!skipAI) {
-              // Add a small delay between stages to avoid hitting rate limits (15/min is roughly 1 every 4s)
-              // But since we are doing 3 per lead, let's wait 2s between each request.
-              if (leadRecords.length > 0) await sleep(2000); 
-              
-              const res = await getVariation(stage.type, finalSubject, finalBody, lead.name, lead.agency || "Independent");
-              if (res.success && res.subject && res.body) {
-                finalSubject = res.subject;
-                finalBody = res.body;
+              if (!skipAI) {
+                // Add a small delay between stages to avoid hitting rate limits (15/min is roughly 1 every 4s)
+                // But since we are doing 3 per lead, let's wait 2s between each request.
+                if (leadRecords.length > 0) await sleep(2000); 
+                
+                const res = await getVariation(stage.type, finalSubject, finalBody, lead.name, lead.agency || "Independent");
+                if (res.success && res.subject && res.body) {
+                  finalSubject = res.subject;
+                  finalBody = res.body;
+                }
               }
-            }
 
-            leadRecords.push({
-              name: lead.name,
-              email: lead.email,
-              state: lead.state?.toUpperCase(),
-              agency: lead.agency || null,
-              timezone: tz,
-              scheduled_date: format(stage.date, "yyyy-MM-dd"),
-              ai_pitch: JSON.stringify({ 
-                stage: stage.type,
-                subject: finalSubject,
-                body: finalBody,
-                linkedin: lead.linkedin || null
-              }),
-            });
-          }
-          return leadRecords;
-        });
+              leadRecords.push({
+                name: lead.name,
+                email: lead.email,
+                state: lead.state?.toUpperCase(),
+                agency: lead.agency || null,
+                timezone: tz,
+                scheduled_date: format(stage.date, "yyyy-MM-dd"),
+                ai_pitch: JSON.stringify({ 
+                  stage: stage.type,
+                  subject: finalSubject,
+                  body: finalBody,
+                  linkedin: lead.linkedin || null,
+                  assigned_color: assignedColor
+                }),
+              });
+            }
+            return leadRecords;
+          });
 
         const batchResults = await Promise.all(batchPromises);
         finalLeads.push(...batchResults.flat());

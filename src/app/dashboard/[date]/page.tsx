@@ -46,10 +46,11 @@ interface ParsedPitch {
   subject: string | null;
   body: string | null;
   linkedin: string | null;
+  assigned_color: string | null;
 }
 
 function parsePitch(raw: string | null): ParsedPitch {
-  const defaults = { stage: "INTRO", subject: null, body: null, linkedin: null };
+  const defaults = { stage: "INTRO", subject: null, body: null, linkedin: null, assigned_color: null };
   if (!raw) return defaults;
   
   try {
@@ -66,7 +67,13 @@ function parsePitch(raw: string | null): ParsedPitch {
         body = body || parsed.pitch.replace(/^\[.*?\]\s*/, "");
       }
       
-      return { stage, subject, body, linkedin: parsed.linkedin || null };
+      return { 
+        stage, 
+        subject, 
+        body, 
+        linkedin: parsed.linkedin || null,
+        assigned_color: parsed.assigned_color || null
+      };
     }
   } catch {}
 
@@ -91,6 +98,11 @@ function getSASendWindow(recipientTimezone: string): string {
   };
   return `${fmt(startH)} – ${fmt(endH)} SAST`;
 }
+
+const PARTNER_COLORS: Record<string, string> = {
+  indigo: "bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]",
+  rose: "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]",
+};
 
 export default function DailyWorkConsole({ params }: { params: Promise<{ date: string }> }) {
   const { date } = use(params);
@@ -166,14 +178,15 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
     const res = await recomposeEmail(stage, currentSubject, currentBody, lead.name, lead.agency || "Independent");
     
     if (res.success && res.subject && res.body) {
-      const { linkedin } = parsePitch(lead.ai_pitch);
+      const { linkedin, assigned_color } = parsePitch(lead.ai_pitch);
       
       // Persist to DB immediately so it's not lost on refresh
       const updatedPitch = JSON.stringify({
         stage,
         subject: res.subject,
         body: res.body,
-        linkedin
+        linkedin,
+        assigned_color
       });
 
       const { error } = await supabase
@@ -257,14 +270,26 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
         </div>
 
         {leads.length > 0 && (
-          <div className="flex items-center space-x-3 bg-[var(--surface)] border border-[var(--border)] px-4 py-2 rounded-xl">
-            <div className="h-1.5 w-24 bg-[var(--border)] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-deep)] transition-all duration-700"
-                style={{ width: `${(sentCount / leads.length) * 100}%` }}
-              />
+          <div className="flex flex-col items-end space-y-2">
+            <div className="flex items-center space-x-4 mb-1">
+              <div className="flex items-center space-x-1.5">
+                <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_5px_rgba(99,102,241,0.5)]"></div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Werner</span>
+              </div>
+              <div className="flex items-center space-x-1.5">
+                <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_5px_rgba(244,63,94,0.5)]"></div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Louis</span>
+              </div>
             </div>
-            <span className="text-xs font-black text-[var(--muted)]">{Math.round((sentCount / leads.length) * 100)}%</span>
+            <div className="flex items-center space-x-3 bg-[var(--surface)] border border-[var(--border)] px-4 py-2 rounded-xl">
+              <div className="h-1.5 w-24 bg-[var(--border)] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-deep)] transition-all duration-700"
+                  style={{ width: `${(sentCount / leads.length) * 100}%` }}
+                />
+              </div>
+              <span className="text-xs font-black text-[var(--muted)]">{Math.round((sentCount / leads.length) * 100)}%</span>
+            </div>
           </div>
         )}
       </div>
@@ -280,7 +305,7 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
           </div>
         ) : (
           leads.map((lead) => {
-            const { stage, linkedin, subject: savedSubject, body: savedBody } = parsePitch(lead.ai_pitch);
+            const { stage, linkedin, subject: savedSubject, body: savedBody, assigned_color: assignedColor } = parsePitch(lead.ai_pitch);
             
             const firstName = lead.name.split(" ")[0];
             const companyName = lead.agency || "Independent";
@@ -298,10 +323,16 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
               <div 
                 key={lead.id} 
                 className={cn(
-                  "glass-panel relative overflow-hidden transition-all duration-500",
+                  "glass-panel relative overflow-hidden transition-all duration-500 pl-6",
                   lead.sent_at ? "opacity-50 grayscale" : "hover:border-[var(--accent)]/30"
                 )}
               >
+                {/* Partner Color Strip */}
+                <div className={cn(
+                  "absolute top-0 left-0 bottom-0 w-1.5",
+                  assignedColor ? PARTNER_COLORS[assignedColor as keyof typeof PARTNER_COLORS] : "bg-[var(--border)]"
+                )} />
+
                 {/* Top progress bar */}
                 <div className="absolute top-0 left-0 h-0.5 w-full bg-[var(--border)]">
                   <div className={cn(
@@ -327,6 +358,10 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
                     {/* Name + LinkedIn */}
                     <div>
                       <div className="flex items-center space-x-2 pr-20">
+                        <div className={cn(
+                          "h-2 w-2 rounded-full shrink-0",
+                          assignedColor ? PARTNER_COLORS[assignedColor as keyof typeof PARTNER_COLORS] : "bg-[var(--muted)]"
+                        )} />
                         <h3 className="text-lg font-black text-[var(--foreground)]">{lead.name}</h3>
                         {linkedin && (
                           <a
@@ -342,7 +377,7 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
                           </a>
                         )}
                       </div>
-                      <p className="text-xs font-bold text-[var(--muted)] uppercase tracking-widest">{lead.agency || "Independent"}</p>
+                      <p className="text-xs font-bold text-[var(--muted)] uppercase tracking-widest pl-4">{lead.agency || "Independent"}</p>
                     </div>
 
                     {/* Email */}

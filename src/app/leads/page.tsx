@@ -190,49 +190,61 @@ export default function LeadListPage() {
           <h1 className="text-3xl font-black tracking-tight">Leads</h1>
           <p className="mt-2 text-[var(--muted)]">{leads.length} total &mdash; <span className="text-[var(--accent)] font-bold">{pendingCount} pending</span></p>
         </div>
-        <div className="flex items-center space-x-3">
-          {/* Filter Tabs */}
-          <div className="flex items-center bg-[var(--surface)] border border-[var(--border)] rounded-lg p-0.5 text-[10px] font-black uppercase tracking-widest">
-            {(["all", "pending", "sent"] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={cn(
-                  "px-3 py-1.5 rounded-md transition-all",
-                  filter === f
-                    ? "bg-[var(--accent)] text-[var(--btn-text)] shadow-sm"
-                    : "text-[var(--muted)] hover:text-[var(--foreground)]"
-                )}
-              >{f}</button>
-            ))}
+        <div className="flex flex-col items-end space-y-3">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-1.5">
+              <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_5px_rgba(99,102,241,0.5)]"></div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Werner</span>
+            </div>
+            <div className="flex items-center space-x-1.5">
+              <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_5px_rgba(244,63,94,0.5)]"></div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Louis</span>
+            </div>
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted)]" />
-            <input 
-              placeholder="Search leads..."
-              className="input-field pl-9 w-56 text-xs"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          
-          <button 
-            onClick={() => setConfirmOptimize(true)}
-            disabled={optimizing || pendingCount === 0}
-            className="flex items-center space-x-2 px-4 py-2 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/20 rounded-md text-xs font-bold transition-all disabled:opacity-30"
-          >
-            {optimizing ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-            <span>Optimize Schedule</span>
-          </button>
+          <div className="flex items-center space-x-3">
+            {/* Filter Tabs */}
+            <div className="flex items-center bg-[var(--surface)] border border-[var(--border)] rounded-lg p-0.5 text-[10px] font-black uppercase tracking-widest">
+              {(["all", "pending", "sent"] as const).map(f => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-md transition-all",
+                    filter === f
+                      ? "bg-[var(--accent)] text-[var(--btn-text)] shadow-sm"
+                      : "text-[var(--muted)] hover:text-[var(--foreground)]"
+                  )}
+                >{f}</button>
+              ))}
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted)]" />
+              <input 
+                placeholder="Search leads..."
+                className="input-field pl-9 w-56 text-xs"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <button 
+              onClick={() => setConfirmOptimize(true)}
+              disabled={optimizing || pendingCount === 0}
+              className="flex items-center space-x-2 px-4 py-2 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/20 rounded-md text-xs font-bold transition-all disabled:opacity-30"
+            >
+              {optimizing ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+              <span>Optimize Schedule</span>
+            </button>
 
-          <button 
-            onClick={() => setConfirmClear(true)}
-            disabled={clearing || leads.length === 0}
-            className="flex items-center space-x-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-md text-xs font-bold transition-all disabled:opacity-30"
-          >
-            {clearing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
-            <span>Clear Schedule</span>
-          </button>
+            <button 
+              onClick={() => setConfirmClear(true)}
+              disabled={clearing || leads.length === 0}
+              className="flex items-center space-x-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-md text-xs font-bold transition-all disabled:opacity-30"
+            >
+              {clearing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+              <span>Clear Schedule</span>
+            </button>
+          </div>
         </div>
       </div>
       
@@ -317,10 +329,16 @@ export default function LeadListPage() {
                 </tr>
               ) : (
                 filteredLeads.map((lead) => {
-                  let pitchData = { pitch: lead.ai_pitch, linkedin: null };
+                  let pitchData = { pitch: lead.ai_pitch, linkedin: null, assigned_color: null };
                   try {
                     if (lead.ai_pitch?.startsWith("{")) {
-                      pitchData = JSON.parse(lead.ai_pitch);
+                      const parsed = JSON.parse(lead.ai_pitch);
+                      pitchData = {
+                        ...parsed,
+                        pitch: parsed.pitch || null,
+                        linkedin: parsed.linkedin || null,
+                        assigned_color: parsed.assigned_color || null
+                      };
                     }
                   } catch (e) {}
 
@@ -328,11 +346,16 @@ export default function LeadListPage() {
                   const stage = stageMatch ? stageMatch[1] : "N/A";
                   const displayPitch = pitchData.pitch?.replace(/^\[.*?\]\s*/, "") || "No content";
 
+                  const partnerColor = pitchData.assigned_color === "indigo" ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" : 
+                                      pitchData.assigned_color === "rose" ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" : 
+                                      "bg-[var(--border)]";
+
                   return (
                     <tr key={lead.id} className="hover:bg-[var(--foreground)]/[0.02] transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <div className="flex items-center space-x-2">
+                            <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", partnerColor)} />
                             <span className="font-bold text-[var(--foreground)] text-sm">{lead.name}</span>
                             {pitchData.linkedin && (
                               <a 

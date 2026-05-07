@@ -43,7 +43,7 @@ interface ToastMessage {
 }
 
 interface ParsedPitch {
-  stage: string;
+  stage: "INTRO" | "SHOWREELS" | "CURTAIN_CALL";
   subject: string | null;
   body: string | null;
   linkedin: string | null;
@@ -51,20 +51,20 @@ interface ParsedPitch {
 }
 
 function parsePitch(raw: string | null): ParsedPitch {
-  const defaults = { stage: "INTRO", subject: null, body: null, linkedin: null, assigned_color: null };
+  const defaults: ParsedPitch = { stage: "INTRO", subject: null, body: null, linkedin: null, assigned_color: null };
   if (!raw) return defaults;
   
   try {
     if (raw.startsWith("{")) {
       const parsed = JSON.parse(raw);
       // Handle legacy 'pitch' format if necessary, or the new structured format
-      let stage = parsed.stage || "INTRO";
+      let stage: ParsedPitch["stage"] = parsed.stage || "INTRO";
       let body = parsed.body || null;
       let subject = parsed.subject || null;
       
       if (parsed.pitch) {
         const stageMatch = parsed.pitch.match(/^\[(INTRO|SHOWREELS|CURTAIN_CALL)\]/);
-        stage = stageMatch ? stageMatch[1] : "INTRO";
+        stage = (stageMatch ? stageMatch[1] : "INTRO") as ParsedPitch["stage"];
         body = body || parsed.pitch.replace(/^\[.*?\]\s*/, "");
       }
       
@@ -332,8 +332,9 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
             const sendWindow = getSASendWindow(lead.timezone);
 
             // Prioritize: 1. Saved variation data, 2. Global template fallback
-            const emailSubject = savedSubject || DEFAULT_TEMPLATES[stage as keyof typeof DEFAULT_TEMPLATES]?.[0]?.subject || "";
-            const emailBody = savedBody || (templates[stage as keyof typeof templates] as any) || DEFAULT_TEMPLATES[stage as keyof typeof DEFAULT_TEMPLATES]?.[0]?.body || "";
+            const stageKey = stage as "INTRO" | "SHOWREELS" | "CURTAIN_CALL";
+            const emailSubject = savedSubject || DEFAULT_TEMPLATES[stageKey][0].subject || "";
+            const emailBody = savedBody || (templates[stageKey] as any) || DEFAULT_TEMPLATES[stageKey][0].body || "";
             const signature = signatures[assignedColor as keyof typeof signatures] || "";
 
             const vars = { name: firstName, company: companyName };

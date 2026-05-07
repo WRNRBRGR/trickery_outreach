@@ -54,16 +54,22 @@ export class ScheduleTracker {
 
   getNextAvailableDate(startDate: Date, minGapDays: number = 0): Date {
     let current = new Date(startDate);
-    if (minGapDays > 0) {
-      current.setDate(current.getDate() + minGapDays);
+    
+    // 1. Handle the gap by counting only active days
+    let gapsCounted = 0;
+    while (gapsCounted < minGapDays) {
+      current.setDate(current.getDate() + 1);
+      if (this.config.activeDays.includes(current.getDay())) {
+        gapsCounted++;
+      }
     }
 
+    // 2. Find the first available active day that is under the limit
     let safety = 0;
     while (safety < 365) { // Prevent infinite loops
       const dateStr = format(current, "yyyy-MM-dd");
       const count = this.map.get(dateStr) || 0;
       
-      // Ensure we compare numbers and handle potential string storage
       const activeDays = this.config.activeDays.map(Number);
       const isAllowedDay = activeDays.includes(current.getDay());
       
@@ -105,8 +111,16 @@ export function getNextValidDate(startDate: Date, activeDays: number[]): Date {
  * Adds an offset to a date and then finds the next valid date.
  */
 export function getOffsetValidDate(startDate: Date, days: number, activeDays: number[]): Date {
-  let date = new Date(startDate);
-  date.setDate(date.getDate() + days);
-  return getNextValidDate(date, activeDays);
+  let current = new Date(startDate);
+  let gapsCounted = 0;
+  
+  while (gapsCounted < days) {
+    current.setDate(current.getDate() + 1);
+    if (activeDays.includes(current.getDay())) {
+      gapsCounted++;
+    }
+  }
+  
+  return getNextValidDate(current, activeDays);
 }
 

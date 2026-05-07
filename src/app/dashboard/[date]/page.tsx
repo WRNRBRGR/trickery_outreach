@@ -79,7 +79,7 @@ function parsePitch(raw: string | null): ParsedPitch {
   } catch {}
 
   const stageMatch = raw.match(/^\[(INTRO|SHOWREELS|CURTAIN_CALL)\]/);
-  return { ...defaults, stage: stageMatch ? stageMatch[1] : "INTRO" };
+  return { ...defaults, stage: (stageMatch ? stageMatch[1] : "INTRO") as ParsedPitch["stage"] };
 }
 
 function getSASendWindow(recipientTimezone: string): string {

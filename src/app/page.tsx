@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { format, addDays, startOfDay } from "date-fns";
+import { format, addDays, startOfDay, startOfWeek } from "date-fns";
 import { Loader2, Calendar as CalendarIcon, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -18,8 +18,8 @@ export default function Dashboard() {
   }, []);
 
   async function fetchCounts() {
-    const today = startOfDay(new Date());
-    const dateStr = format(today, "yyyy-MM-dd");
+    const start = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const dateStr = format(start, "yyyy-MM-dd");
 
     const { data, error } = await supabase
       .from("leads")
@@ -39,7 +39,9 @@ export default function Dashboard() {
     setLoading(false);
   }
 
-  const days = Array.from({ length: 30 }, (_, i) => addDays(startOfDay(new Date()), i));
+  // Align to Monday of current week and show 35 days (5 full weeks)
+  const startDate = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const days = Array.from({ length: 35 }, (_, i) => addDays(startOfDay(startDate), i));
   const config = useSchedulingConfig();
   const limit = config.dailyLimit;
   const today = format(new Date(), "yyyy-MM-dd");
@@ -77,6 +79,13 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          {/* Headers for 7-column layout */}
+          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+            <div key={d} className="hidden lg:flex items-center justify-center pb-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--muted)]/50">{d}</span>
+            </div>
+          ))}
+
           {days.map((day) => {
             const dateStr = day.toISOString().split("T")[0];
             const count = counts[dateStr] || 0;

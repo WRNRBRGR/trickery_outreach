@@ -18,11 +18,22 @@ export function SchedulingSettings({ onClose }: { onClose: () => void }) {
       return { ...prev, activeDays };
     });
   };
+  useEffect(() => {
+    const saved = localStorage.getItem("scheduling_config");
+    if (saved) {
+      try {
+        setConfig(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse scheduling config", e);
+      }
+    }
+  }, []);
 
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
     localStorage.setItem("scheduling_config", JSON.stringify(config));
+    window.dispatchEvent(new Event("scheduling_config_updated"));
     setSaved(true);
     setTimeout(() => {
       onClose();

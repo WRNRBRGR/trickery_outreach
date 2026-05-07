@@ -18,14 +18,20 @@ export function useSchedulingConfig() {
   const [config, setConfig] = useState<SchedulingConfig>(getDefaultConfig());
   
   useEffect(() => {
-    const saved = localStorage.getItem("scheduling_config");
-    if (saved) {
-      try {
-        setConfig(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse scheduling config", e);
+    const load = () => {
+      const saved = localStorage.getItem("scheduling_config");
+      if (saved) {
+        try {
+          setConfig(JSON.parse(saved));
+        } catch (e) {
+          console.error("Failed to parse scheduling config", e);
+        }
       }
-    }
+    };
+
+    load();
+    window.addEventListener("scheduling_config_updated", load);
+    return () => window.removeEventListener("scheduling_config_updated", load);
   }, []);
 
   return config;

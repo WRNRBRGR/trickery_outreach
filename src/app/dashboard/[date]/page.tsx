@@ -123,7 +123,7 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
   }
 
   function loadTemplates() {
-    const loadDefault = (stage: keyof typeof TEMPLATE_KEYS) => {
+    const loadDefault = (stage: "INTRO" | "SHOWREELS" | "CURTAIN_CALL") => {
       // For fallback, just use the first variation
       return localStorage.getItem(TEMPLATE_KEYS[stage][0].body) || DEFAULT_TEMPLATES[stage][0].body;
     };

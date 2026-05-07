@@ -45,7 +45,7 @@ export default function EmailCopySettings() {
   const gap = config.daysBetween;
 
   useEffect(() => {
-    const loadStage = (stage: keyof typeof TEMPLATE_KEYS) => {
+    const loadStage = (stage: "INTRO" | "SHOWREELS" | "CURTAIN_CALL") => {
       return TEMPLATE_KEYS[stage].map((keys, idx) => ({
         subject: localStorage.getItem(keys.subject) || DEFAULT_TEMPLATES[stage][idx].subject,
         body: localStorage.getItem(keys.body) || DEFAULT_TEMPLATES[stage][idx].body,
@@ -76,7 +76,7 @@ export default function EmailCopySettings() {
     setSaving(true);
     setSaved(false);
 
-    const saveStage = (stage: keyof typeof TEMPLATE_KEYS) => {
+    const saveStage = (stage: "INTRO" | "SHOWREELS" | "CURTAIN_CALL") => {
       templates[stage].forEach((v, idx) => {
         localStorage.setItem(TEMPLATE_KEYS[stage][idx].subject, v.subject);
         localStorage.setItem(TEMPLATE_KEYS[stage][idx].body, v.body);
@@ -102,7 +102,7 @@ export default function EmailCopySettings() {
     if (confirm("Reset all templates and variations to their default values?")) {
       setTemplates(DEFAULT_TEMPLATES);
       
-      const clearStage = (stage: keyof typeof TEMPLATE_KEYS) => {
+      const clearStage = (stage: "INTRO" | "SHOWREELS" | "CURTAIN_CALL") => {
         TEMPLATE_KEYS[stage].forEach(keys => {
           localStorage.removeItem(keys.subject);
           localStorage.removeItem(keys.body);

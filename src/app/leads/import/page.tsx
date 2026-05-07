@@ -79,7 +79,7 @@ export default function LeadImportPage() {
       setProgress({ current: 0, total: parsedLeads.length });
 
       // 1. Load all template variations and subjects
-      const loadStage = (stage: keyof typeof TEMPLATE_KEYS) => {
+      const loadStage = (stage: "INTRO" | "SHOWREELS" | "CURTAIN_CALL") => {
         return TEMPLATE_KEYS[stage].map((keys, idx) => ({
           subject: localStorage.getItem(keys.subject) || DEFAULT_TEMPLATES[stage][idx].subject,
           body: localStorage.getItem(keys.body) || DEFAULT_TEMPLATES[stage][idx].body,

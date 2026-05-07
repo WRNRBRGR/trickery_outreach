@@ -332,8 +332,8 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
             const sendWindow = getSASendWindow(lead.timezone);
 
             // Prioritize: 1. Saved variation data, 2. Global template fallback
-            const emailSubject = savedSubject || EMAIL_SUBJECTS[stage as keyof typeof EMAIL_SUBJECTS] || EMAIL_SUBJECTS.INTRO;
-            const emailBody = savedBody || (templates[stage as keyof typeof templates] as any) || templates.INTRO;
+            const emailSubject = savedSubject || DEFAULT_TEMPLATES[stage as keyof typeof DEFAULT_TEMPLATES]?.[0]?.subject || "";
+            const emailBody = savedBody || (templates[stage as keyof typeof templates] as any) || DEFAULT_TEMPLATES[stage as keyof typeof DEFAULT_TEMPLATES]?.[0]?.body || "";
             const signature = signatures[assignedColor as keyof typeof signatures] || "";
 
             const vars = { name: firstName, company: companyName };

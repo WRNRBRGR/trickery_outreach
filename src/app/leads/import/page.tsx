@@ -94,8 +94,8 @@ export default function LeadImportPage() {
 
       // 2. Flexible Schedule Tracker
       const today = new Date();
-      // If it's past 11 AM, start scheduling from tomorrow
-      if (today.getHours() >= 11) {
+      // If it's past 3 PM, start scheduling from tomorrow
+      if (today.getHours() >= 15) {
         today.setDate(today.getDate() + 1);
       }
       today.setHours(0, 0, 0, 0);

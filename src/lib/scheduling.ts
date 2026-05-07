@@ -8,7 +8,7 @@ export interface SchedulingConfig {
 }
 
 export function getDefaultConfig(): SchedulingConfig {
-  return { daysBetween: 3, dailyLimit: 10, activeDays: [2, 3, 4, 5] }; // Default: Tue, Wed, Thu, Fri
+  return { daysBetween: 3, dailyLimit: 10, activeDays: [1, 2, 3, 4, 5] }; // Default: Mon, Tue, Wed, Thu, Fri
 }
 
 /**
@@ -58,17 +58,23 @@ export class ScheduleTracker {
       current.setDate(current.getDate() + minGapDays);
     }
 
-    while (true) {
+    let safety = 0;
+    while (safety < 365) { // Prevent infinite loops
       const dateStr = format(current, "yyyy-MM-dd");
       const count = this.map.get(dateStr) || 0;
-      const isAllowedDay = this.config.activeDays.includes(current.getDay());
+      
+      // Ensure we compare numbers and handle potential string storage
+      const activeDays = this.config.activeDays.map(Number);
+      const isAllowedDay = activeDays.includes(current.getDay());
       
       if (isAllowedDay && count < this.config.dailyLimit) {
         this.map.set(dateStr, count + 1);
         return new Date(current);
       }
       current.setDate(current.getDate() + 1);
+      safety++;
     }
+    return current; // Fallback
   }
 
   addCount(dateStr: string) {

@@ -87,7 +87,7 @@ export default function Dashboard() {
           ))}
 
           {days.map((day) => {
-            const dateStr = day.toISOString().split("T")[0];
+            const dateStr = format(day, "yyyy-MM-dd");
             const count = counts[dateStr] || 0;
             const isToday = dateStr === today;
             const isPast = dateStr < today;

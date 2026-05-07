@@ -89,31 +89,70 @@ export function SchedulingSettings({ onClose }: { onClose: () => void }) {
         </div>
 
 
-        <div className="space-y-3">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Active Outreach Days</label>
-          <div className="grid grid-cols-7 gap-1">
-            {DAYS.map((day, idx) => {
-              const isActive = config.activeDays.includes(idx);
-              return (
-                <button
-                  key={day}
-                  onClick={() => handleToggleDay(idx)}
-                  className={cn(
-                    "flex flex-col items-center justify-center py-2 rounded-md border transition-all",
-                    isActive 
-                      ? "bg-[var(--accent)]/10 border-[var(--accent)] text-[var(--accent)]" 
-                      : "bg-[var(--background)] border-[var(--border)] text-[var(--muted)]"
-                  )}
+        <div className="space-y-4 pt-6 border-t border-[var(--border)]">
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Partner Calendar Sync</label>
+            <a 
+              href="https://support.google.com/calendar/answer/37100" 
+              target="_blank" 
+              className="text-[9px] font-bold text-[var(--accent)] hover:underline"
+            >
+              How to add?
+            </a>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3">
+            {/* Werner's Feed */}
+            <div className="p-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_5px_rgba(99,102,241,0.5)]"></div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[var(--foreground)]">Werner</span>
+                </div>
+                <button 
+                  onClick={() => {
+                    const url = `${window.location.origin}/api/calendar?key=trickery-outreach-secret&partner=indigo`;
+                    navigator.clipboard.writeText(url);
+                    const btn = document.getElementById('copy-werner');
+                    if (btn) btn.innerText = 'Copied!';
+                    setTimeout(() => { if (btn) btn.innerText = 'Copy URL'; }, 2000);
+                  }}
+                  id="copy-werner"
+                  className="text-[9px] font-bold uppercase text-[var(--accent)] hover:underline"
                 >
-                  <span className="text-[8px] font-bold uppercase">{day}</span>
-                  {isActive && <Check className="h-2 w-2 mt-1" />}
+                  Copy URL
                 </button>
-              );
-            })}
+              </div>
+              <p className="text-[9px] text-[var(--muted)]">Syncs leads assigned to Werner (Indigo).</p>
+            </div>
+
+            {/* Louis's Feed */}
+            <div className="p-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_5px_rgba(244,63,94,0.5)]"></div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[var(--foreground)]">Louis</span>
+                </div>
+                <button 
+                  onClick={() => {
+                    const url = `${window.location.origin}/api/calendar?key=trickery-outreach-secret&partner=rose`;
+                    navigator.clipboard.writeText(url);
+                    const btn = document.getElementById('copy-louis');
+                    if (btn) btn.innerText = 'Copied!';
+                    setTimeout(() => { if (btn) btn.innerText = 'Copy URL'; }, 2000);
+                  }}
+                  id="copy-louis"
+                  className="text-[9px] font-bold uppercase text-[var(--accent)] hover:underline"
+                >
+                  Copy URL
+                </button>
+              </div>
+              <p className="text-[9px] text-[var(--muted)]">Syncs leads assigned to Louis (Rose).</p>
+            </div>
           </div>
         </div>
 
-        <div className="pt-4 flex justify-end space-x-3">
+        <div className="pt-6 flex justify-end space-x-3">
           <button 
             onClick={onClose}
             className="px-4 py-2 text-xs font-bold text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"

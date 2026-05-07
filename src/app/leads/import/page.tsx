@@ -80,9 +80,10 @@ export default function LeadImportPage() {
 
       // 1. Load all template variations and subjects
       const loadStage = (stage: "INTRO" | "SHOWREELS" | "CURTAIN_CALL") => {
+        const templateArray = DEFAULT_TEMPLATES[stage];
         return TEMPLATE_KEYS[stage].map((keys, idx) => ({
-          subject: localStorage.getItem(keys.subject) || DEFAULT_TEMPLATES[stage][idx].subject,
-          body: localStorage.getItem(keys.body) || DEFAULT_TEMPLATES[stage][idx].body,
+          subject: localStorage.getItem(keys.subject) || templateArray[idx].subject,
+          body: localStorage.getItem(keys.body) || templateArray[idx].body,
         }));
       };
 

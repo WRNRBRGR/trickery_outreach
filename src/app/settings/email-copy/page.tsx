@@ -46,9 +46,10 @@ export default function EmailCopySettings() {
 
   useEffect(() => {
     const loadStage = (stage: "INTRO" | "SHOWREELS" | "CURTAIN_CALL") => {
+      const templateArray = DEFAULT_TEMPLATES[stage];
       return TEMPLATE_KEYS[stage].map((keys, idx) => ({
-        subject: localStorage.getItem(keys.subject) || DEFAULT_TEMPLATES[stage][idx].subject,
-        body: localStorage.getItem(keys.body) || DEFAULT_TEMPLATES[stage][idx].body,
+        subject: localStorage.getItem(keys.subject) || templateArray[idx].subject,
+        body: localStorage.getItem(keys.body) || templateArray[idx].body,
       }));
     };
 
@@ -100,7 +101,11 @@ export default function EmailCopySettings() {
 
   const handleReset = () => {
     if (confirm("Reset all templates and variations to their default values?")) {
-      setTemplates(DEFAULT_TEMPLATES);
+      setTemplates({
+        INTRO: DEFAULT_TEMPLATES.INTRO,
+        SHOWREELS: DEFAULT_TEMPLATES.SHOWREELS,
+        CURTAIN_CALL: DEFAULT_TEMPLATES.CURTAIN_CALL,
+      });
       
       const clearStage = (stage: "INTRO" | "SHOWREELS" | "CURTAIN_CALL") => {
         TEMPLATE_KEYS[stage].forEach(keys => {
@@ -139,7 +144,7 @@ export default function EmailCopySettings() {
     });
   };
 
-  const renderStage = (stage: keyof typeof templates, label: string, step: string, dayText: string) => {
+  const renderStage = (stage: "INTRO" | "SHOWREELS" | "CURTAIN_CALL", label: string, step: string, dayText: string) => {
     const activeIdx = activeTabs[stage];
     const current = templates[stage][activeIdx];
 

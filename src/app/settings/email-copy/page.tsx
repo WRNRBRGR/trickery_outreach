@@ -25,6 +25,11 @@ export default function EmailCopySettings() {
     ],
   });
   
+  const [signatures, setSignatures] = useState({
+    indigo: "",
+    rose: "",
+  });
+  
   const [activeTabs, setActiveTabs] = useState({
     INTRO: 0,
     SHOWREELS: 0,
@@ -52,6 +57,12 @@ export default function EmailCopySettings() {
       SHOWREELS: loadStage("SHOWREELS"),
       CURTAIN_CALL: loadStage("CURTAIN_CALL"),
     });
+
+    setSignatures({
+      indigo: localStorage.getItem(TEMPLATE_KEYS.SIGNATURES.indigo) || DEFAULT_TEMPLATES.SIGNATURES.indigo,
+      rose: localStorage.getItem(TEMPLATE_KEYS.SIGNATURES.rose) || DEFAULT_TEMPLATES.SIGNATURES.rose,
+    });
+
     setLoading(false);
   }, []);
 
@@ -75,6 +86,9 @@ export default function EmailCopySettings() {
     saveStage("INTRO");
     saveStage("SHOWREELS");
     saveStage("CURTAIN_CALL");
+
+    localStorage.setItem(TEMPLATE_KEYS.SIGNATURES.indigo, signatures.indigo);
+    localStorage.setItem(TEMPLATE_KEYS.SIGNATURES.rose, signatures.rose);
     
     setTimeout(() => {
       setSaving(false);
@@ -98,7 +112,13 @@ export default function EmailCopySettings() {
       clearStage("INTRO");
       clearStage("SHOWREELS");
       clearStage("CURTAIN_CALL");
-      addToast("info", "Templates reset to defaults.");
+      
+      localStorage.removeItem(TEMPLATE_KEYS.SIGNATURES.indigo);
+      localStorage.removeItem(TEMPLATE_KEYS.SIGNATURES.rose);
+
+      setSignatures(DEFAULT_TEMPLATES.SIGNATURES);
+
+      addToast("info", "Templates and signatures reset to defaults.");
     }
   };
 
@@ -218,6 +238,34 @@ export default function EmailCopySettings() {
         {renderStage("INTRO", "Introduction", "01. First Contact", "Day 1")}
         {renderStage("SHOWREELS", "Showreels & Work", "02. Proof of Value", `Day ${1 + gap} (+${gap})`)}
         {renderStage("CURTAIN_CALL", "Curtain Call", "03. Final Check-in", `Day ${1 + gap * 2} (+${gap})`)}
+        
+        {/* Signatures */}
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="glass-panel space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-2 h-2 rounded-full bg-indigo-500 dark:shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+              <h4 className="text-sm font-black">Werner's Signature</h4>
+            </div>
+            <textarea
+              className="input-field w-full h-32 resize-none text-xs leading-relaxed font-mono"
+              placeholder="Enter signature..."
+              value={signatures.indigo}
+              onChange={(e) => setSignatures(prev => ({ ...prev, indigo: e.target.value }))}
+            />
+          </div>
+          <div className="glass-panel space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-2 h-2 rounded-full bg-rose-500 dark:shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
+              <h4 className="text-sm font-black">Louis's Signature</h4>
+            </div>
+            <textarea
+              className="input-field w-full h-32 resize-none text-xs leading-relaxed font-mono"
+              placeholder="Enter signature..."
+              value={signatures.rose}
+              onChange={(e) => setSignatures(prev => ({ ...prev, rose: e.target.value }))}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]">

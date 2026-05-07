@@ -78,6 +78,10 @@ export const TEMPLATE_KEYS = {
     { subject: "email_template_curtain_call_v2_subject", body: "email_template_curtain_call_v2_body" },
     { subject: "email_template_curtain_call_v3_subject", body: "email_template_curtain_call_v3_body" },
   ],
+  SIGNATURES: {
+    indigo: "email_signature_indigo",
+    rose: "email_signature_rose",
+  }
 };
 
 export const DEFAULT_TEMPLATES = {
@@ -123,4 +127,8 @@ export const DEFAULT_TEMPLATES = {
       body: "Wanted to send one last note to see if there's any interest in a quick intro call. If not, no worries at all!" 
     },
   ],
+  SIGNATURES: {
+    indigo: "\nWerner Burger\nTrickery\n\n+27 73 252 8362\nwww.trickery.co.za\n\n---\nThis email and any attachments are confidential and intended solely for the use of the individual or entity to whom it is addressed. If you have received this email in error, please notify Trickery and delete this message from your system.",
+    rose: "\nLouis Minnaar\nTrickery\n\n+27 82 575 6333\nwww.trickery.co.za\n\n---\nThis email and any attachments are confidential and intended solely for the use of the individual or entity to whom it is addressed. If you have received this email in error, please notify Trickery and delete this message from your system.",
+  }
 };

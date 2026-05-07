@@ -13,3 +13,13 @@ export function replaceVariables(text: string, variables: Record<string, string>
   });
   return result;
 }
+export function getGmailLink(email: string, subject: string, body: string) {
+  const params = new URLSearchParams({
+    view: "cm",
+    fs: "1",
+    to: email,
+    su: subject,
+    body: body
+  });
+  return `https://mail.google.com/mail/?${params.toString()}`;
+}

@@ -7,10 +7,11 @@ import { format, parseISO } from "date-fns";
 import { 
   ChevronLeft, Clock, Send, Sparkles,
   CheckCircle2, Loader2,
-  Mail, AlertCircle, RotateCcw, MapPin
+  Mail, AlertCircle, RotateCcw, MapPin,
+  Copy, ExternalLink
 } from "lucide-react";
 import Link from "next/link";
-import { cn, replaceVariables } from "@/lib/utils";
+import { cn, replaceVariables, getGmailLink } from "@/lib/utils";
 import { TIMEZONE_LABELS, TEMPLATE_KEYS, DEFAULT_TEMPLATES } from "@/lib/constants";
 import { recomposeEmail } from "@/app/actions/ai";
 
@@ -100,8 +101,8 @@ function getSASendWindow(recipientTimezone: string): string {
 }
 
 const PARTNER_COLORS: Record<string, string> = {
-  indigo: "bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]",
-  rose: "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]",
+  indigo: "bg-indigo-500 dark:shadow-[0_0_10px_rgba(99,102,241,0.5)]",
+  rose: "bg-rose-500 dark:shadow-[0_0_10px_rgba(244,63,94,0.5)]",
 };
 
 export default function DailyWorkConsole({ params }: { params: Promise<{ date: string }> }) {
@@ -111,7 +112,15 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
   const [currentTime, setCurrentTime] = useState(new Date());
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [templates, setTemplates] = useState({ INTRO: "", SHOWREELS: "", CURTAIN_CALL: "" });
+  const [signatures, setSignatures] = useState({ indigo: "", rose: "" });
   const [recomposing, setRecomposing] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  function copyToClipboard(text: string, id: string) {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  }
 
   function loadTemplates() {
     const loadDefault = (stage: keyof typeof TEMPLATE_KEYS) => {
@@ -123,6 +132,11 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
       INTRO: loadDefault("INTRO"),
       SHOWREELS: loadDefault("SHOWREELS"),
       CURTAIN_CALL: loadDefault("CURTAIN_CALL"),
+    });
+
+    setSignatures({
+      indigo: localStorage.getItem(TEMPLATE_KEYS.SIGNATURES.indigo) || DEFAULT_TEMPLATES.SIGNATURES.indigo,
+      rose: localStorage.getItem(TEMPLATE_KEYS.SIGNATURES.rose) || DEFAULT_TEMPLATES.SIGNATURES.rose,
     });
   }
 
@@ -163,6 +177,12 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
       setLeads(prev => prev.map(l => l.id === leadId ? { ...l, sent_at: now } : l));
       addToast("success", "Lead marked as sent.");
     }
+  }
+
+  function handleOpenGmail(lead: Lead, subject: string, body: string) {
+    const url = getGmailLink(lead.email, subject, body);
+    window.open(url, "_blank", "noopener,noreferrer");
+    markAsSent(lead.id);
   }
 
   async function markAsUnsent(leadId: string) {
@@ -273,11 +293,11 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
           <div className="flex flex-col items-end space-y-2">
             <div className="flex items-center space-x-4 mb-1">
               <div className="flex items-center space-x-1.5">
-                <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_5px_rgba(99,102,241,0.5)]"></div>
+                <div className="w-2 h-2 rounded-full bg-indigo-500 dark:shadow-[0_0_5px_rgba(99,102,241,0.5)]"></div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Werner</span>
               </div>
               <div className="flex items-center space-x-1.5">
-                <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_5px_rgba(244,63,94,0.5)]"></div>
+                <div className="w-2 h-2 rounded-full bg-rose-500 dark:shadow-[0_0_5px_rgba(244,63,94,0.5)]"></div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Louis</span>
               </div>
             </div>
@@ -314,10 +334,12 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
             // Prioritize: 1. Saved variation data, 2. Global template fallback
             const emailSubject = savedSubject || EMAIL_SUBJECTS[stage as keyof typeof EMAIL_SUBJECTS] || EMAIL_SUBJECTS.INTRO;
             const emailBody = savedBody || (templates[stage as keyof typeof templates] as any) || templates.INTRO;
+            const signature = signatures[assignedColor as keyof typeof signatures] || "";
 
             const vars = { name: firstName, company: companyName };
             const finalSubject = replaceVariables(emailSubject, vars);
             const finalBody = replaceVariables(emailBody, vars);
+            const finalBodyWithSig = `${finalBody}\n${signature}`;
 
             return (
               <div 
@@ -381,9 +403,18 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
                     </div>
 
                     {/* Email */}
-                    <div className="flex items-center space-x-2 text-xs text-[var(--muted)]">
-                      <Mail className="h-3 w-3 flex-shrink-0" />
-                      <span className="truncate">{lead.email}</span>
+                    <div className="flex items-center justify-between group/email pr-4">
+                      <div className="flex items-center space-x-2 text-xs text-[var(--muted)]">
+                        <Mail className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate max-w-[140px]">{lead.email}</span>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(lead.email, `email-${lead.id}`)}
+                        className="opacity-0 group-hover/email:opacity-100 p-1 hover:bg-[var(--surface)] rounded transition-all"
+                        title="Copy Email"
+                      >
+                        <Copy className={cn("h-3 w-3", copiedId === `email-${lead.id}` ? "text-green-500" : "text-[var(--muted)]")} />
+                      </button>
                     </div>
 
                     {/* Time info */}
@@ -420,7 +451,18 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
 
                   {/* Center: Email Preview */}
                   <div className="lg:col-span-6 space-y-3">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Email Preview</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Email Preview</label>
+                      {!lead.sent_at && (
+                        <button 
+                          onClick={() => copyToClipboard(`Subject: ${finalSubject}\n\nHi ${firstName},\n\n${finalBodyWithSig}`, `body-${lead.id}`)}
+                          className="flex items-center space-x-1.5 px-2 py-1 rounded border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--foreground)]/[0.05] text-[9px] font-bold uppercase tracking-widest transition-all"
+                        >
+                          <Copy className={cn("h-3 w-3", copiedId === `body-${lead.id}` ? "text-green-500" : "text-[var(--muted)]")} />
+                          <span>{copiedId === `body-${lead.id}` ? "Copied!" : "Copy Full Email"}</span>
+                        </button>
+                      )}
+                    </div>
                     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                       {/* Subject */}
                       <div className="px-4 py-3 border-b border-slate-100 flex items-center space-x-3 bg-slate-50/50">
@@ -454,13 +496,40 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
                   {/* Right: Actions */}
                   <div className="lg:col-span-3 flex flex-col space-y-3 pt-6">
                     {!lead.sent_at ? (
-                      <button 
-                        onClick={() => markAsSent(lead.id)}
-                        className="btn-primary w-full flex items-center justify-center text-sm"
-                      >
-                        <Send className="mr-2 h-4 w-4" />
-                        Mark as Sent
-                      </button>
+                      <>
+                        <button 
+                          onClick={() => handleOpenGmail(lead, finalSubject, `Hi ${firstName},\n\n${finalBodyWithSig}`)}
+                          className={cn(
+                            "btn-primary w-full flex items-center justify-center text-sm dark:shadow-lg transition-all",
+                            assignedColor === "rose" 
+                              ? "bg-gradient-to-r from-red-600 to-red-500 border-red-700/50 hover:from-red-700 hover:to-red-600 dark:shadow-red-600/20" 
+                              : "bg-gradient-to-r from-indigo-600 to-blue-500 border-indigo-700/50 hover:from-indigo-700 hover:to-indigo-600 dark:shadow-indigo-600/20"
+                          )}
+                        >
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          Open in Gmail
+                        </button>
+
+                        {linkedin && (
+                          <a 
+                            href={linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-lg border border-[#0077b5]/30 bg-[#0077b5]/10 text-[#0077b5] hover:bg-[#0077b5]/20 text-xs font-bold uppercase tracking-widest transition-all"
+                          >
+                            <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                            <span>LinkedIn Profile</span>
+                          </a>
+                        )}
+
+                        <button 
+                          onClick={() => markAsSent(lead.id)}
+                          className="w-full flex items-center justify-center space-x-1.5 text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors py-1"
+                        >
+                          <Send className="h-3 w-3" />
+                          <span>Manual Mark as Sent</span>
+                        </button>
+                      </>
                     ) : (
                       <div className="flex flex-col items-center space-y-3">
                         <div className="flex flex-col items-center text-[var(--accent)] bg-[var(--accent)]/5 rounded-xl border border-[var(--accent)]/20 p-6 w-full">

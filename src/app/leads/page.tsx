@@ -193,11 +193,11 @@ export default function LeadListPage() {
         <div className="flex flex-col items-end space-y-3">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1.5">
-              <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_5px_rgba(99,102,241,0.5)]"></div>
+              <div className="w-2 h-2 rounded-full bg-indigo-500 dark:shadow-[0_0_5px_rgba(99,102,241,0.5)]"></div>
               <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Werner</span>
             </div>
             <div className="flex items-center space-x-1.5">
-              <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_5px_rgba(244,63,94,0.5)]"></div>
+              <div className="w-2 h-2 rounded-full bg-rose-500 dark:shadow-[0_0_5px_rgba(244,63,94,0.5)]"></div>
               <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Louis</span>
             </div>
           </div>
@@ -346,8 +346,8 @@ export default function LeadListPage() {
                   const stage = stageMatch ? stageMatch[1] : "N/A";
                   const displayPitch = pitchData.pitch?.replace(/^\[.*?\]\s*/, "") || "No content";
 
-                  const partnerColor = pitchData.assigned_color === "indigo" ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" : 
-                                      pitchData.assigned_color === "rose" ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" : 
+                  const partnerColor = pitchData.assigned_color === "indigo" ? "bg-indigo-500 dark:shadow-[0_0_8px_rgba(99,102,241,0.6)]" : 
+                                      pitchData.assigned_color === "rose" ? "bg-rose-500 dark:shadow-[0_0_8px_rgba(244,63,94,0.6)]" : 
                                       "bg-[var(--border)]";
 
                   return (
@@ -387,7 +387,7 @@ export default function LeadListPage() {
                             <span>{lead.timezone}</span>
                           </div>
                           {lead.timezone && (
-                             <div className="text-[9px] text-[var(--accent)] font-black uppercase tracking-tighter bg-gradient-to-r from-indigo-500/10 to-violet-500/5 px-2 py-1 rounded-full w-fit border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)]">
+                             <div className="text-[9px] text-[var(--accent)] font-black uppercase tracking-tighter bg-gradient-to-r from-indigo-500/10 to-violet-500/5 px-2 py-1 rounded-full w-fit border border-indigo-500/20 dark:shadow-[0_0_15px_rgba(99,102,241,0.1)]">
                                Optimal: 9AM - 12PM Local
                              </div>
                           )}

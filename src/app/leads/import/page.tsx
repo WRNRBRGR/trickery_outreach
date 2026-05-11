@@ -76,7 +76,19 @@ export default function LeadImportPage() {
         throw new Error("No valid leads found. Ensure format: Name, Email, State, Agency");
       }
 
-      setProgress({ current: 0, total: parsedLeads.length });
+      // 0. Duplicate Check
+      const { data: existingEmails, error: fetchError } = await supabase.from("leads").select("email");
+      if (fetchError) throw fetchError;
+      
+      const existingEmailSet = new Set(existingEmails?.map(e => e.email.toLowerCase()) || []);
+      const uniqueLeads = parsedLeads.filter(l => !existingEmailSet.has(l.email.toLowerCase()));
+      const skippedCount = parsedLeads.length - uniqueLeads.length;
+
+      if (uniqueLeads.length === 0) {
+        throw new Error(`All ${parsedLeads.length} leads in this batch have already been imported.`);
+      }
+
+      setProgress({ current: 0, total: uniqueLeads.length });
 
       // 1. Load all template variations and subjects
       const loadStage = (stage: "INTRO" | "SHOWREELS" | "CURTAIN_CALL") => {
@@ -121,8 +133,8 @@ export default function LeadImportPage() {
       const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
       const concurrencyLimit = skipAI ? 5 : 1; // Only process 1 lead at a time if AI is enabled
 
-      for (let i = 0; i < parsedLeads.length; i += concurrencyLimit) {
-        const batch = parsedLeads.slice(i, i + concurrencyLimit);
+      for (let i = 0; i < uniqueLeads.length; i += concurrencyLimit) {
+        const batch = uniqueLeads.slice(i, i + concurrencyLimit);
         
           const batchPromises = batch.map(async (lead, batchIdx) => {
             const globalIdx = i + batchIdx;
@@ -180,7 +192,7 @@ export default function LeadImportPage() {
 
         const batchResults = await Promise.all(batchPromises);
         finalLeads.push(...batchResults.flat());
-        setProgress({ current: Math.min(i + concurrencyLimit, parsedLeads.length), total: parsedLeads.length });
+        setProgress({ current: Math.min(i + concurrencyLimit, uniqueLeads.length), total: uniqueLeads.length });
       }
 
       const { error: insertError } = await supabase.from("leads").insert(finalLeads);
@@ -188,9 +200,9 @@ export default function LeadImportPage() {
 
       setStatus({
         type: "success",
-        message: `Successfully imported ${parsedLeads.length} leads. Calendar populated with 3-email sequences.`,
+        message: `Successfully imported ${uniqueLeads.length} leads. ${skippedCount > 0 ? `${skippedCount} duplicates skipped.` : ""} Calendar populated with 3-email sequences.`,
       });
-      setImportedCount(parsedLeads.length);
+      setImportedCount(uniqueLeads.length);
       setRawData("");
       setFileName(null);
       // No auto-redirect — user clicks through manually

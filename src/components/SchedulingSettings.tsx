@@ -88,6 +88,58 @@ export function SchedulingSettings({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
+        <div className="space-y-4 pt-6 border-t border-[var(--border)]">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Smart Warm-up</label>
+              <p className="text-[9px] text-[var(--muted)]">Gradually increase volume to protect sender reputation.</p>
+            </div>
+            <button
+              onClick={() => setConfig({ ...config, warmupEnabled: !config.warmupEnabled })}
+              className={cn(
+                "relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                config.warmupEnabled ? "bg-[var(--accent)]" : "bg-[var(--border)]"
+              )}
+            >
+              <span
+                className={cn(
+                  "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                  config.warmupEnabled ? "translate-x-5" : "translate-x-0"
+                )}
+              />
+            </button>
+          </div>
+
+          {config.warmupEnabled && (
+            <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-[var(--muted)]/70">Start Volume</label>
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="number"
+                    value={config.warmupStart}
+                    onChange={(e) => setConfig({ ...config, warmupStart: parseInt(e.target.value) || 1 })}
+                    className="input-field py-1 px-2 text-xs w-full"
+                  />
+                  <span className="text-[9px] text-[var(--muted)]">emails</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-[var(--muted)]/70">Daily Increase</label>
+                <div className="flex items-center space-x-2">
+                   <input 
+                    type="number"
+                    value={config.warmupIncrement}
+                    onChange={(e) => setConfig({ ...config, warmupIncrement: parseInt(e.target.value) || 1 })}
+                    className="input-field py-1 px-2 text-xs w-full"
+                  />
+                  <span className="text-[9px] text-[var(--muted)]">+ emails</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
 
         <div className="space-y-4 pt-6 border-t border-[var(--border)]">
           <div className="flex items-center justify-between">

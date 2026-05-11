@@ -5,10 +5,20 @@ export interface SchedulingConfig {
   daysBetween: number;
   dailyLimit: number;
   activeDays: number[]; // 0 = Sun, 1 = Mon, ..., 6 = Sat
+  warmupEnabled: boolean;
+  warmupStart: number;
+  warmupIncrement: number;
 }
 
 export function getDefaultConfig(): SchedulingConfig {
-  return { daysBetween: 3, dailyLimit: 10, activeDays: [1, 2, 3, 4, 5] }; // Default: Mon, Tue, Wed, Thu, Fri
+  return { 
+    daysBetween: 3, 
+    dailyLimit: 10, 
+    activeDays: [1, 2, 3, 4, 5],
+    warmupEnabled: false,
+    warmupStart: 5,
+    warmupIncrement: 2
+  }; // Default: Mon, Tue, Wed, Thu, Fri
 }
 
 /**
@@ -45,11 +55,31 @@ export class ScheduleTracker {
   private map: Map<string, number> = new Map();
   private config: SchedulingConfig;
 
+  private startDate: string | null = null;
+
   constructor(config: SchedulingConfig, existingCounts?: Map<string, number>) {
     this.config = config;
     if (existingCounts) {
       this.map = new Map(existingCounts);
     }
+  }
+
+  setStartDate(date: Date) {
+    this.startDate = format(date, "yyyy-MM-dd");
+  }
+
+  getLimitForDate(date: Date): number {
+    if (!this.config.warmupEnabled || !this.startDate) return this.config.dailyLimit;
+    
+    // Calculate days since start
+    const start = new Date(this.startDate);
+    const diffTime = date.getTime() - start.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return this.config.dailyLimit;
+    
+    const dynamicLimit = this.config.warmupStart + (diffDays * this.config.warmupIncrement);
+    return Math.min(dynamicLimit, this.config.dailyLimit);
   }
 
   getNextAvailableDate(startDate: Date, minGapDays: number = 0): Date {
@@ -73,7 +103,9 @@ export class ScheduleTracker {
       const activeDays = this.config.activeDays.map(Number);
       const isAllowedDay = activeDays.includes(current.getDay());
       
-      if (isAllowedDay && count < this.config.dailyLimit) {
+      const limit = this.getLimitForDate(current);
+      
+      if (isAllowedDay && count < limit) {
         this.map.set(dateStr, count + 1);
         return new Date(current);
       }

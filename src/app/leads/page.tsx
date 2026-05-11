@@ -81,6 +81,7 @@ export default function LeadListPage() {
       const todayStr = format(today, "yyyy-MM-dd");
 
       const tracker = new ScheduleTracker(config);
+      tracker.setStartDate(today);
       
       // Populate tracker with sent leads (slots that are already "gone")
       allLeads.filter(l => l.sent_at).forEach(l => {

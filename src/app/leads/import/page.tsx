@@ -128,6 +128,7 @@ export default function LeadImportPage() {
       }
 
       const tracker = new ScheduleTracker(config, countsMap);
+      tracker.setStartDate(today);
       const finalLeads = [];
       const gap = config.daysBetween;
       const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

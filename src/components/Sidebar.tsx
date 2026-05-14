@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Settings, PlusCircle, Sliders, Calendar, FileText, History } from "lucide-react";
+import { LayoutDashboard, Users, Settings, PlusCircle, Sliders, Calendar, FileText, History, Map } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
@@ -13,6 +13,7 @@ import { SchedulingSettings } from "./SchedulingSettings";
 
 const mainNav = [
   { name: "Calendar", href: "/", icon: Calendar },
+  { name: "Planner", href: "/planner", icon: Map },
   { name: "Import Leads", href: "/leads/import", icon: PlusCircle },
   { name: "Leads", href: "/leads", icon: Users },
   { name: "Archive", href: "/archive", icon: History },

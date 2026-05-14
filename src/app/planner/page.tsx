@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { Map, Save, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import RichTextEditor from "@/components/RichTextEditor";
+
 export default function PlannerPage() {
   const [note, setNote] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -56,34 +58,21 @@ export default function PlannerPage() {
         </div>
       </div>
 
-      <div className="glass-panel min-h-[500px] flex flex-col p-6 space-y-4">
+      <div className="glass-panel min-h-[600px] flex flex-col p-6 space-y-4">
         <div className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]/70">
           <Info className="h-3 w-3" />
-          <span>Internal Planning Notes</span>
+          <span>Internal Planning Notes (Supports Rich Text & Markdown)</span>
         </div>
         
-        <textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
+        <RichTextEditor
+          content={note}
+          onChange={setNote}
           placeholder="Enter your outreach strategy, states to target, and upcoming months planning here..."
-          className="flex-1 w-full bg-transparent border-none focus:ring-0 text-lg leading-relaxed resize-none placeholder:text-[var(--muted)]/30 placeholder:italic"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-panel p-4 space-y-2 border-dashed opacity-60">
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--accent)]">Pro Tip</h3>
-          <p className="text-xs text-[var(--muted)]">Use this space to paste list of states like: California, Texas, New York for Q3 outreach.</p>
-        </div>
-        <div className="glass-panel p-4 space-y-2 border-dashed opacity-60">
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--accent)]">Reminders</h3>
-          <p className="text-xs text-[var(--muted)]">Don't forget to check timezones before scheduling leads in new states.</p>
-        </div>
-        <div className="glass-panel p-4 space-y-2 border-dashed opacity-60">
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--accent)]">Auto-Save</h3>
-          <p className="text-xs text-[var(--muted)]">Your notes are stored locally in your browser for quick access.</p>
-        </div>
-      </div>
+
     </div>
   );
 }
+

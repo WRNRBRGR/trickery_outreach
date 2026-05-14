@@ -88,6 +88,27 @@ export function SchedulingSettings({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
+        <div className="space-y-3">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Active Days</label>
+          <div className="flex justify-between gap-1">
+            {DAYS.map((day, i) => (
+              <button
+                key={day}
+                onClick={() => handleToggleDay(i)}
+                className={cn(
+                  "flex-1 py-2 text-[10px] font-black rounded-lg border transition-all",
+                  config.activeDays.includes(i)
+                    ? "bg-[var(--accent)] border-[var(--accent)] text-black shadow-[0_0_10px_rgba(99,102,241,0.3)]"
+                    : "bg-[var(--surface)] border-[var(--border)] text-[var(--muted)] opacity-60"
+                )}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+        </div>
+
+
         <div className="space-y-4 pt-6 border-t border-[var(--border)]">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">

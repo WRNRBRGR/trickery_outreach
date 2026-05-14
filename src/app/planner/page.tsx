@@ -61,7 +61,7 @@ export default function PlannerPage() {
       <div className="glass-panel min-h-[600px] flex flex-col p-6 space-y-4">
         <div className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]/70">
           <Info className="h-3 w-3" />
-          <span>Internal Planning Notes (Supports Rich Text & Markdown)</span>
+          <span>Internal Planning Notes</span>
         </div>
         
         <RichTextEditor

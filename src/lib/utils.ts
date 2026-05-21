@@ -23,3 +23,14 @@ export function getGmailLink(email: string, subject: string, body: string) {
   });
   return `https://mail.google.com/mail/?${params.toString()}`;
 }
+
+export function getLinkedInUrl(url: string | null, name: string, agency: string | null) {
+  if (!url) return null;
+  // If it's a Sales Navigator link, it will fail for other users.
+  // We convert it to a robust LinkedIn search to find the profile.
+  if (url.includes("/sales/")) {
+    const query = encodeURIComponent(`${name} ${agency || ""}`.trim());
+    return `https://www.linkedin.com/search/results/people/?keywords=${query}`;
+  }
+  return url;
+}

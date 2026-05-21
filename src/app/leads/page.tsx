@@ -6,7 +6,7 @@ import { Database } from "@/types/database";
 import { format, parseISO } from "date-fns";
 import { ScheduleTracker, useSchedulingConfig } from "@/lib/scheduling";
 import { RefreshCw, Loader2, Search, Trash2, Mail, MapPin, Calendar, Clock, AlertTriangle, Copy, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getLinkedInUrl } from "@/lib/utils";
 
 type Lead = Database["public"]["Tables"]["leads"]["Row"];
 
@@ -362,7 +362,7 @@ export default function LeadListPage() {
                             {pitchData.linkedin && (
                               <div className="flex items-center space-x-2">
                                 <a 
-                                  href={pitchData.linkedin} 
+                                  href={getLinkedInUrl(pitchData.linkedin, lead.name, lead.agency) || "#"} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
                                   className="text-[var(--accent)] hover:opacity-70 transition-opacity"

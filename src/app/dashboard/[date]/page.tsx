@@ -11,7 +11,7 @@ import {
   Copy, ExternalLink
 } from "lucide-react";
 import Link from "next/link";
-import { cn, replaceVariables, getGmailLink } from "@/lib/utils";
+import { cn, replaceVariables, getGmailLink, getLinkedInUrl } from "@/lib/utils";
 import { TIMEZONE_LABELS, TEMPLATE_KEYS, DEFAULT_TEMPLATES } from "@/lib/constants";
 import { recomposeEmail } from "@/app/actions/ai";
 
@@ -389,7 +389,7 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
                         {linkedin && (
                           <div className="flex items-center space-x-1">
                             <a
-                              href={linkedin}
+                              href={getLinkedInUrl(linkedin, lead.name, lead.agency) || "#"}
                               target="_blank"
                               rel="noopener noreferrer"
                               title="View LinkedIn Profile"
@@ -527,7 +527,7 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
                         {linkedin && (
                           <>
                             <a 
-                              href={linkedin}
+                              href={getLinkedInUrl(linkedin, lead.name, lead.agency) || "#"}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-lg border border-[#0077b5]/30 bg-[#0077b5]/10 text-[#0077b5] hover:bg-[#0077b5]/20 text-xs font-bold uppercase tracking-widest transition-all"

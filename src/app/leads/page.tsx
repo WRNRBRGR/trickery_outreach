@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
 import { format, parseISO } from "date-fns";
 import { ScheduleTracker, useSchedulingConfig } from "@/lib/scheduling";
-import { RefreshCw, Loader2, Search, Trash2, Mail, MapPin, Calendar, Clock, AlertTriangle } from "lucide-react";
+import { RefreshCw, Loader2, Search, Trash2, Mail, MapPin, Calendar, Clock, AlertTriangle, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Lead = Database["public"]["Tables"]["leads"]["Row"];
@@ -34,6 +34,7 @@ export default function LeadListPage() {
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [confirmOptimize, setConfirmOptimize] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const config = useSchedulingConfig();
 
@@ -359,15 +360,32 @@ export default function LeadListPage() {
                             <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", partnerColor)} />
                             <span className="font-bold text-[var(--foreground)] text-sm">{lead.name}</span>
                             {pitchData.linkedin && (
-                              <a 
-                                href={pitchData.linkedin} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-[var(--accent)] hover:opacity-70 transition-opacity"
-                                title="View LinkedIn Profile"
-                              >
-                                <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                              </a>
+                              <div className="flex items-center space-x-2">
+                                <a 
+                                  href={pitchData.linkedin} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-[var(--accent)] hover:opacity-70 transition-opacity"
+                                  title="View LinkedIn Profile"
+                                >
+                                  <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                                </a>
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    const sender = pitchData.assigned_color === "indigo" ? "Werner" : pitchData.assigned_color === "rose" ? "Louis" : "Werner";
+                                    const firstName = lead.name.split(' ')[0];
+                                    const note = `Hi there ${firstName},\n\nI work at Trickery out of South Africa. We specialize in 2D and 3D motion graphics and animation for agencies around the globe. I would love to connect and showcase some of our work!\n\nGreetings,\n${sender}`;
+                                    navigator.clipboard.writeText(note);
+                                    setCopiedId(lead.id);
+                                    setTimeout(() => setCopiedId(null), 2000);
+                                  }}
+                                  className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                                  title="Copy connection note"
+                                >
+                                  {copiedId === lead.id ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                                </button>
+                              </div>
                             )}
                           </div>
                           <span className="text-[10px] text-[var(--muted)] font-medium">{lead.agency || "Independent"}</span>

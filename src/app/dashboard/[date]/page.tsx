@@ -387,17 +387,30 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
                         )} />
                         <h3 className="text-lg font-black text-[var(--foreground)]">{lead.name}</h3>
                         {linkedin && (
-                          <a
-                            href={linkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="View LinkedIn Profile"
-                            className="p-1 rounded-md text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-colors flex-shrink-0"
-                          >
-                            <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
-                              <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                            </svg>
-                          </a>
+                          <div className="flex items-center space-x-1">
+                            <a
+                              href={linkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="View LinkedIn Profile"
+                              className="p-1 rounded-md text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-colors flex-shrink-0"
+                            >
+                              <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                              </svg>
+                            </a>
+                            <button
+                              onClick={() => {
+                                const sender = assignedColor === "indigo" ? "Werner" : assignedColor === "rose" ? "Louis" : "Werner";
+                                const note = `Hi there ${firstName},\n\nI work at Trickery out of South Africa. We specialize in 2D and 3D motion graphics and animation for agencies around the globe. I would love to connect and showcase some of our work!\n\nGreetings,\n${sender}`;
+                                copyToClipboard(note, `linkedin-note-small-${lead.id}`);
+                              }}
+                              className="p-1 rounded-md text-[var(--muted)] hover:text-[var(--foreground)] transition-colors flex-shrink-0"
+                              title="Copy connection note"
+                            >
+                              <Copy className={cn("h-4 w-4", copiedId === `linkedin-note-small-${lead.id}` ? "text-green-500" : "")} />
+                            </button>
+                          </div>
                         )}
                       </div>
                       <p className="text-xs font-bold text-[var(--muted)] uppercase tracking-widest pl-4">{lead.agency || "Independent"}</p>
@@ -512,15 +525,28 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
                         </button>
 
                         {linkedin && (
-                          <a 
-                            href={linkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-lg border border-[#0077b5]/30 bg-[#0077b5]/10 text-[#0077b5] hover:bg-[#0077b5]/20 text-xs font-bold uppercase tracking-widest transition-all"
-                          >
-                            <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                            <span>LinkedIn Profile</span>
-                          </a>
+                          <>
+                            <a 
+                              href={linkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-lg border border-[#0077b5]/30 bg-[#0077b5]/10 text-[#0077b5] hover:bg-[#0077b5]/20 text-xs font-bold uppercase tracking-widest transition-all"
+                            >
+                              <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                              <span>LinkedIn Profile</span>
+                            </a>
+                            <button
+                              onClick={() => {
+                                const sender = assignedColor === "indigo" ? "Werner" : assignedColor === "rose" ? "Louis" : "Werner";
+                                const note = `Hi there ${firstName},\n\nI work at Trickery out of South Africa. We specialize in 2D and 3D motion graphics and animation for agencies around the globe. I would love to connect and showcase some of our work!\n\nGreetings,\n${sender}`;
+                                copyToClipboard(note, `linkedin-note-large-${lead.id}`);
+                              }}
+                              className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-lg border border-[var(--accent)]/30 bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 text-xs font-bold uppercase tracking-widest transition-all"
+                            >
+                              <Copy className={cn("h-4 w-4", copiedId === `linkedin-note-large-${lead.id}` ? "text-green-500" : "")} />
+                              <span>{copiedId === `linkedin-note-large-${lead.id}` ? "Copied Note!" : "Copy Connect Note"}</span>
+                            </button>
+                          </>
                         )}
 
                         <button 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useTransition } from 'react'
 import { login } from './actions'
 import { useSearchParams } from 'next/navigation'
 import { Loader2, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react'
@@ -8,16 +8,14 @@ import { Loader2, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react'
 function LoginForm() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
-  const [loading, setLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   return (
     <form 
       className="glass-panel p-8 space-y-6 relative z-10"
-      onSubmit={(e) => {
-        setLoading(true)
-        const formData = new FormData(e.currentTarget)
-        login(formData).catch(() => setLoading(false))
-      }}
+      action={(formData) => startTransition(() => {
+        login(formData)
+      })}
     >
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-bold px-4 py-3 rounded-xl flex items-center space-x-2">
@@ -62,10 +60,10 @@ function LoginForm() {
 
       <button 
         type="submit" 
-        disabled={loading}
+        disabled={isPending}
         className="w-full bg-[var(--foreground)] text-[var(--background)] font-bold rounded-xl py-3.5 flex items-center justify-center hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:hover:scale-100 group"
       >
-        {loading ? (
+        {isPending ? (
           <Loader2 className="w-5 h-5 animate-spin" />
         ) : (
           <div className="flex items-center space-x-2">

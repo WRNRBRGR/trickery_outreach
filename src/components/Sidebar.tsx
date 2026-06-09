@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Settings, PlusCircle, Sliders, Calendar, FileText, History, Map } from "lucide-react";
+import { LayoutDashboard, Users, Settings, PlusCircle, Sliders, Calendar, FileText, History, Map, LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 
 import { ThemeToggle } from "./ThemeToggle";
 import { SchedulingSettings } from "./SchedulingSettings";
+import { logout } from "@/app/login/actions";
 
 const mainNav = [
   { name: "Calendar", href: "/", icon: Calendar },
@@ -132,12 +133,24 @@ export default function Sidebar() {
 
       <div className="p-4 mt-auto flex items-center justify-between border-t border-[var(--border)]">
         <ThemeToggle />
-        <button 
-          onClick={() => setShowSettings(true)}
-          className="p-2 hover:bg-[var(--background)] rounded-full text-[var(--muted)] hover:text-[var(--foreground)] transition-all border border-transparent hover:border-[var(--border)]"
-        >
-          <Sliders className="h-4 w-4" />
-        </button>
+        <div className="flex items-center space-x-1">
+          <form action={logout}>
+            <button 
+              type="submit"
+              className="p-2 hover:bg-red-500/10 rounded-full text-[var(--muted)] hover:text-red-500 transition-all border border-transparent hover:border-red-500/20"
+              title="Log Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </form>
+          <button 
+            onClick={() => setShowSettings(true)}
+            className="p-2 hover:bg-[var(--background)] rounded-full text-[var(--muted)] hover:text-[var(--foreground)] transition-all border border-transparent hover:border-[var(--border)]"
+            title="Settings"
+          >
+            <Sliders className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {showSettings && <SchedulingSettings onClose={() => setShowSettings(false)} />}

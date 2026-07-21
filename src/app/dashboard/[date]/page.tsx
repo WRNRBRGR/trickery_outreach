@@ -14,6 +14,7 @@ import Link from "next/link";
 import { cn, replaceVariables, getGmailLink, getLinkedInUrl } from "@/lib/utils";
 import { TIMEZONE_LABELS, TEMPLATE_KEYS, DEFAULT_TEMPLATES } from "@/lib/constants";
 import { recomposeEmail } from "@/app/actions/ai";
+import { sendViaSes } from "@/app/actions/send";
 
 type Lead = Database["public"]["Tables"]["leads"]["Row"];
 
@@ -115,6 +116,7 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
   const [signatures, setSignatures] = useState({ indigo: "", rose: "" });
   const [recomposing, setRecomposing] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [sendingId, setSendingId] = useState<string | null>(null);
 
   function copyToClipboard(text: string, id: string) {
     navigator.clipboard.writeText(text);
@@ -170,11 +172,14 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
     }
   }
 
-  async function markAsSent(leadId: string) {
+  async function markAsSent(leadId: string, sentVia: "gmail" | "ses" = "gmail", sesMessageId?: string) {
     const now = new Date().toISOString();
-    const { error } = await supabase.from("leads").update({ sent_at: now }).eq("id", leadId);
+    const { error } = await supabase
+      .from("leads")
+      .update({ sent_at: now, sent_via: sentVia, ses_message_id: sesMessageId || null })
+      .eq("id", leadId);
     if (!error) {
-      setLeads(prev => prev.map(l => l.id === leadId ? { ...l, sent_at: now } : l));
+      setLeads(prev => prev.map(l => l.id === leadId ? { ...l, sent_at: now, sent_via: sentVia, ses_message_id: sesMessageId || null } : l));
       addToast("success", "Lead marked as sent.");
     }
   }
@@ -182,7 +187,23 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
   function handleOpenGmail(lead: Lead, subject: string, body: string) {
     const url = getGmailLink(lead.email, subject, body);
     window.open(url, "_blank", "noopener,noreferrer");
-    markAsSent(lead.id);
+    markAsSent(lead.id, "gmail");
+  }
+
+  async function handleSendViaSes(lead: Lead, subject: string, body: string, assignedColor: string | null) {
+    if (lead.suppressed) {
+      addToast("error", `Cannot send — this address is suppressed (${lead.suppressed_reason || "unknown reason"}).`);
+      return;
+    }
+    setSendingId(lead.id);
+    const res = await sendViaSes(lead.email, subject, body, assignedColor);
+    if (res.success) {
+      await markAsSent(lead.id, "ses", res.messageId);
+      addToast("success", "Email sent via SES.");
+    } else {
+      addToast("error", res.error || "Failed to send email.");
+    }
+    setSendingId(null);
   }
 
   async function markAsUnsent(leadId: string) {
@@ -509,19 +530,48 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
 
                   {/* Right: Actions */}
                   <div className="lg:col-span-3 flex flex-col space-y-3 pt-6">
-                    {!lead.sent_at ? (
+                    {lead.suppressed ? (
+                      <div className="flex flex-col items-center space-y-3">
+                        <div className="flex flex-col items-center text-red-500 bg-red-500/5 rounded-xl border border-red-500/20 p-6 w-full">
+                          <AlertCircle className="h-10 w-10 mb-2" />
+                          <span className="text-xs font-black uppercase tracking-widest">Suppressed</span>
+                          <span className="text-[10px] text-[var(--muted)] mt-1 capitalize">{lead.suppressed_reason || "unknown reason"}</span>
+                        </div>
+                        {!lead.sent_at && (
+                          <button
+                            onClick={() => markAsSent(lead.id, "gmail")}
+                            className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                          >
+                            Override &amp; mark as sent manually
+                          </button>
+                        )}
+                      </div>
+                    ) : !lead.sent_at ? (
                       <>
-                        <button 
-                          onClick={() => handleOpenGmail(lead, finalSubject, `Hi ${firstName},\n\n${finalBodyWithSig}`)}
+                        <button
+                          onClick={() => handleSendViaSes(lead, finalSubject, `Hi ${firstName},\n\n${finalBodyWithSig}`, assignedColor)}
+                          disabled={sendingId === lead.id}
                           className={cn(
-                            "btn-primary w-full flex items-center justify-center text-sm dark:shadow-lg transition-all",
-                            assignedColor === "rose" 
-                              ? "bg-gradient-to-r from-red-600 to-red-500 border-red-700/50 hover:from-red-700 hover:to-red-600 dark:shadow-red-600/20" 
+                            "btn-primary w-full flex items-center justify-center text-sm dark:shadow-lg transition-all disabled:opacity-50",
+                            assignedColor === "rose"
+                              ? "bg-gradient-to-r from-red-600 to-red-500 border-red-700/50 hover:from-red-700 hover:to-red-600 dark:shadow-red-600/20"
                               : "bg-gradient-to-r from-indigo-600 to-blue-500 border-indigo-700/50 hover:from-indigo-700 hover:to-indigo-600 dark:shadow-indigo-600/20"
                           )}
                         >
-                          <ExternalLink className="mr-2 h-4 w-4" />
-                          Open in Gmail
+                          {sendingId === lead.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="mr-2 h-4 w-4" />
+                          )}
+                          {sendingId === lead.id ? "Sending..." : "Send Email"}
+                        </button>
+
+                        <button
+                          onClick={() => handleOpenGmail(lead, finalSubject, `Hi ${firstName},\n\n${finalBodyWithSig}`)}
+                          className="w-full flex items-center justify-center space-x-1.5 text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors py-1"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>Open in Gmail instead</span>
                         </button>
 
                         {linkedin && (
@@ -563,6 +613,7 @@ export default function DailyWorkConsole({ params }: { params: Promise<{ date: s
                           <CheckCircle2 className="h-10 w-10 mb-2" />
                           <span className="text-xs font-black uppercase tracking-widest">Sent</span>
                           <span className="text-[10px] text-[var(--muted)] mt-1">{format(parseISO(lead.sent_at), "h:mm a")}</span>
+                          <span className="text-[9px] text-[var(--muted)]/60 mt-0.5 uppercase tracking-widest">via {lead.sent_via === "ses" ? "SES" : "Gmail"}</span>
                         </div>
                         <button
                           onClick={() => markAsUnsent(lead.id)}

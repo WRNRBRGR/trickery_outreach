@@ -45,6 +45,12 @@ export type Database = {
           showreel_id: string | null
           ai_pitch: string | null
           created_at: string
+          suppressed: boolean
+          suppressed_reason: "bounce" | "complaint" | "unsubscribe" | null
+          bounce_count: number
+          bounced_at: string | null
+          sent_via: "gmail" | "ses" | null
+          ses_message_id: string | null
         }
         Insert: {
           id?: string
@@ -58,6 +64,12 @@ export type Database = {
           showreel_id?: string | null
           ai_pitch?: string | null
           created_at?: string
+          suppressed?: boolean
+          suppressed_reason?: "bounce" | "complaint" | "unsubscribe" | null
+          bounce_count?: number
+          bounced_at?: string | null
+          sent_via?: "gmail" | "ses" | null
+          ses_message_id?: string | null
         }
         Update: {
           id?: string
@@ -71,6 +83,12 @@ export type Database = {
           showreel_id?: string | null
           ai_pitch?: string | null
           created_at?: string
+          suppressed?: boolean
+          suppressed_reason?: "bounce" | "complaint" | "unsubscribe" | null
+          bounce_count?: number
+          bounced_at?: string | null
+          sent_via?: "gmail" | "ses" | null
+          ses_message_id?: string | null
         }
       }
     }

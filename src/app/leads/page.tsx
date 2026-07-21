@@ -437,15 +437,22 @@ export default function LeadListPage() {
                         })()}
                       </td>
                       <td className="px-6 py-4">
-                        {lead.sent_at ? (
-                          <div className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20">
-                            Sent
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-[var(--surface)] text-[var(--muted)] border border-[var(--border)]">
-                            Pending
-                          </div>
-                        )}
+                        <div className="flex flex-col space-y-1 items-start">
+                          {lead.sent_at ? (
+                            <div className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20">
+                              Sent
+                            </div>
+                          ) : (
+                            <div className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-[var(--surface)] text-[var(--muted)] border border-[var(--border)]">
+                              Pending
+                            </div>
+                          )}
+                          {lead.suppressed && (
+                            <div className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/20 capitalize">
+                              {lead.suppressed_reason || "Suppressed"}
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

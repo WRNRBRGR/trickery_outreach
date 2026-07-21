@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { verifyUnsubscribeToken } from "@/lib/ses";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 async function doUnsubscribe(email: string, token: string) {
   if (!email || !token || !verifyUnsubscribeToken(email, token)) return false;
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
   await supabase
     .from("leads")
     .update({ suppressed: true, suppressed_reason: "unsubscribe" })

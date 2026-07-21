@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
 
 const EXPECTED_TOPIC_ARNS = [
   "arn:aws:sns:eu-west-1:202264955360:trickery-ses-bounces",
@@ -81,6 +80,7 @@ async function verifySnsSignature(msg: SnsMessage): Promise<boolean> {
 }
 
 async function suppressPermanently(email: string, reason: "bounce" | "complaint") {
+  const supabase = getSupabase();
   await supabase
     .from("leads")
     .update({
@@ -92,6 +92,7 @@ async function suppressPermanently(email: string, reason: "bounce" | "complaint"
 }
 
 async function recordTransientBounce(email: string) {
+  const supabase = getSupabase();
   const { data: rows } = await supabase
     .from("leads")
     .select("bounce_count")

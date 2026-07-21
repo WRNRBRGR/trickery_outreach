@@ -128,7 +128,7 @@ export const DEFAULT_TEMPLATES = {
     },
   ],
   SIGNATURES: {
-    indigo: "\nWerner Burger\nTrickery\n\n+27 73 252 8362\nwww.trickery.co.za\n\n---\nThis email and any attachments are confidential and intended solely for the use of the individual or entity to whom it is addressed. If you have received this email in error, please notify Trickery and delete this message from your system.",
-    rose: "\nLouis Minnaar\nTrickery\n\n+27 82 575 6333\nwww.trickery.co.za\n\n---\nThis email and any attachments are confidential and intended solely for the use of the individual or entity to whom it is addressed. If you have received this email in error, please notify Trickery and delete this message from your system.",
+    indigo: "\nWerner Burger\nTrickery\n\n+27 73 252 8362\nwww.trickery.co.za",
+    rose: "\nLouis Minnaar\nTrickery\n\n+27 82 575 6333\nwww.trickery.co.za",
   }
 };

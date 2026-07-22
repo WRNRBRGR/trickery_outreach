@@ -11,9 +11,9 @@ const client = new SESv2Client({
 
 const CONFIGURATION_SET = "trickery-outreach";
 
-const SENDERS: Record<string, { email: string; name: string }> = {
-  indigo: { email: "werner@contact.trickery.co.za", name: "Werner" },
-  rose: { email: "louis@contact.trickery.co.za", name: "Louis" },
+const SENDERS: Record<string, { email: string; name: string; replyTo: string }> = {
+  indigo: { email: "werner@contact.trickery.co.za", name: "Werner", replyTo: "werner@trickery.co.za" },
+  rose: { email: "louis@contact.trickery.co.za", name: "Louis", replyTo: "louis@trickery.co.za" },
 };
 
 export function getSenderForColor(assignedColor: string | null) {
@@ -54,6 +54,7 @@ export async function sendOutreachEmail({
   const command = new SendEmailCommand({
     FromEmailAddress: `${sender.name} at Trickery <${sender.email}>`,
     Destination: { ToAddresses: [to] },
+    ReplyToAddresses: [sender.replyTo],
     ConfigurationSetName: CONFIGURATION_SET,
     Content: {
       Simple: {

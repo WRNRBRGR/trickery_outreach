@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Settings, PlusCircle, Sliders, Calendar, FileText, History, Map, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Settings, PlusCircle, Sliders, Calendar, FileText, History, Map, LogOut, BarChart3 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
@@ -17,6 +17,7 @@ const mainNav = [
   { name: "Planner", href: "/planner", icon: Map },
   { name: "Import Leads", href: "/leads/import", icon: PlusCircle },
   { name: "Leads", href: "/leads", icon: Users },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Archive", href: "/archive", icon: History },
 ];
 

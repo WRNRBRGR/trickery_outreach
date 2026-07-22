@@ -9,6 +9,7 @@ function getSupabase() {
 const EXPECTED_TOPIC_ARNS = [
   "arn:aws:sns:eu-west-1:202264955360:trickery-ses-bounces",
   "arn:aws:sns:eu-west-1:202264955360:trickery-ses-complaints",
+  "arn:aws:sns:eu-west-1:202264955360:trickery-ses-deliveries",
 ];
 
 const SNS_FIELDS_BY_TYPE: Record<string, string[]> = {
@@ -39,6 +40,7 @@ interface SesRecipient {
 interface SesEvent {
   eventType?: string;
   notificationType?: string;
+  mail?: { messageId?: string };
   bounce?: { bounceType?: string; bouncedRecipients?: SesRecipient[] };
   complaint?: { complainedRecipients?: SesRecipient[] };
 }
@@ -89,6 +91,11 @@ async function suppressPermanently(email: string, reason: "bounce" | "complaint"
       ...(reason === "bounce" ? { bounced_at: new Date().toISOString() } : {}),
     })
     .eq("email", email.toLowerCase());
+}
+
+async function recordDelivery(messageId: string) {
+  const supabase = getSupabase();
+  await supabase.from("leads").update({ delivered_at: new Date().toISOString() }).eq("ses_message_id", messageId);
 }
 
 async function recordTransientBounce(email: string) {
@@ -163,6 +170,8 @@ export async function POST(request: NextRequest) {
   } else if (type === "Complaint") {
     const recipients = (event.complaint?.complainedRecipients || []).map((r) => r.emailAddress);
     await Promise.all(recipients.map((email) => suppressPermanently(email, "complaint")));
+  } else if (type === "Delivery") {
+    if (event.mail?.messageId) await recordDelivery(event.mail.messageId);
   }
 
   return NextResponse.json({ ok: true });

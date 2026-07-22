@@ -51,6 +51,7 @@ export type Database = {
           bounced_at: string | null
           sent_via: "gmail" | "ses" | null
           ses_message_id: string | null
+          delivered_at: string | null
         }
         Insert: {
           id?: string
@@ -70,6 +71,7 @@ export type Database = {
           bounced_at?: string | null
           sent_via?: "gmail" | "ses" | null
           ses_message_id?: string | null
+          delivered_at?: string | null
         }
         Update: {
           id?: string
@@ -89,6 +91,7 @@ export type Database = {
           bounced_at?: string | null
           sent_via?: "gmail" | "ses" | null
           ses_message_id?: string | null
+          delivered_at?: string | null
         }
       }
     }
